@@ -1,0 +1,4 @@
+venv/
+.hide/
+__pycache__
+*.egg*
