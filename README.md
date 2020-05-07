@@ -23,3 +23,13 @@ optional arguments:
   -r RUN, --run RUN    start orchestration job without interactive mode
                        (<group>.<project>.<job>)
 ```
+
+### Commands
+| CMD | ACTION |
+|---------|---------|
+| **help** | Display help |
+| **status** | Display status or queued jobs |
+| **run** *job_name* | Run job in current context |
+| **list** *search_pattern* | List jobs in current context |
+| **env** | Switch group/project context |
+| **exit** | Exit |
