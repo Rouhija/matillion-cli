@@ -18,7 +18,7 @@ class Console:
         self.auth = (config['user'], config['password'])
         self.group = None
         self.project = None
-        self.task_id = None
+        self.active_tasks = []
         self.keepalive = True
 
     def print_usage(self):
@@ -26,6 +26,7 @@ class Console:
         print('\tlist <search pattern> (list jobs in current context)')
         print('\trun <job_name> (run job in current context)')
         print('\tenv (switch context)')
+        print('\tstatus (display status or active programs)')
         print('\thelp (display this message)')
         print('\texit')
         print()
@@ -51,6 +52,8 @@ class Console:
                     self.run_job(cmd[1])
                 elif cmd[0] == 'env':
                     self.select_env()
+                elif cmd[0] == 'status':
+                    self.get_status()
                 elif cmd[0] == 'help':
                     self.print_usage()
                 elif cmd[0] == 'exit':
@@ -60,23 +63,43 @@ class Console:
         finally:
             sys.exit('exit')
 
-    def run_job(self, job):
+    def get_status(self):
+        for task_id in self.active_tasks:
+            try:
+                raw_resp = get_task_status(self.addr, self.auth, self.group, self.project, task_id)
+            except:
+                continue
+            resp = to_json(raw_resp)
+            job_name = f"{resp['jobName']} ({resp['id']})"
+            job_state = resp['state']
+            if int(resp['endTime']) == 0:
+                job_uptime = int(round(time.time() * 1000)) - int(resp['startTime'])
+            else:
+                job_uptime = int(resp['endTime']) - int(resp['startTime'])
+            job_uptime = round(job_uptime / 1000, 1)
+            print('{:{width}}'.format(job_name, width=30), end='', flush=True)
+            print('{:{width}}'.format(job_state, width=10), end='', flush=True)
+            print(f'uptime: {job_uptime} seconds')
+
+    def run_job(self, job, poll=False):
         if not self.is_running(job):
             print(f'calling job {self.group}.{self.project}.{job}')
             raw_resp = run_orchestration_job(self.addr, self.auth, self.group, self.project, job)
             print(raw_resp)
-            self.task_id = to_json(raw_resp)['id']
-            self.poll_job(job)
+            task_id = to_json(raw_resp)['id']
+            self.active_tasks.append(task_id)
+            if poll:
+                self.poll_job(job, task_id)
         else:
             print(f'job {job} is already running!')
 
-    def poll_job(self, job):
-        print(f'polling {job} status...')
+    def poll_job(self, job, task_id):
+        print(f'polling {job} ({task_id}) status...')
         state = None
         start_time = time.time()
         while 1:
             try:
-                raw_resp = get_task_status(self.addr, self.auth, self.group, self.project, self.task_id)
+                raw_resp = get_task_status(self.addr, self.auth, self.group, self.project, task_id)
             except Exception as e:
                 print(e)
                 state = 'NOT RUNNING'
@@ -99,7 +122,7 @@ class Console:
             args = arg.split('.')
             self.group = args[0]
             self.project = args[1]
-            self.run_job(args[2])
+            self.run_job(args[2], poll=True)
         except:
             sys.exit(err)
 

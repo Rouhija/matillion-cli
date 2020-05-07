@@ -2,3 +2,5 @@ venv/
 .hide/
 __pycache__
 *.egg*
+build/
+dist/
