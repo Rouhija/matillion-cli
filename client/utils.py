@@ -1,3 +1,4 @@
+import json
 import logging
 import argparse
 
@@ -11,6 +12,13 @@ class UtilError(Error):
 def parse_command(s):
     ls = s.split(' ')
     return ls
+
+def to_json(raw_resp):
+    try:
+        return dict(json.loads(raw_resp))
+    except Exception as e:
+        raise UtilError(e)
+        return None
 
 def format_resp(raw_resp):
     try:
@@ -36,8 +44,8 @@ def enumerate_list(ls, search=None):
 def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", help="log to console", action="store_true")
-    parser.add_argument("-s", "--safe", help="ask for confirmation before executing any operations", action="store_true")
     parser.add_argument("-c", "--configuration", help="re-input configuration values", action="store_true")
+    parser.add_argument("-r", "--run" , help="start orchestration job without interactive mode (<group>.<project>.<job>)")
     return parser.parse_args()
 
 def logger_options(debug: int):

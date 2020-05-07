@@ -7,7 +7,7 @@ python setup.py bdist_wheel
 # Upload
 python -m twine upload dist/*
 # Upgrade
-pip install matillionctl --upgrade
+pip install matillioncli --upgrade
 ```
 
 ### Dependencies

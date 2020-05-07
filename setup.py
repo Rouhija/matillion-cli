@@ -12,9 +12,9 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 dist = setup(
-    name='matillionctl',
+    name='matillioncli',
     version='1.0.0',
-	url='https://github.com/Rouhija/snowflake-cli',
+	url='https://github.com/Rouhija/matillion-cli',
 	description="A cli tool for running Matillion jobs",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -24,7 +24,7 @@ dist = setup(
     install_requires=['requests'],
     entry_points={
         'console_scripts': [
-			'matillionctl = client.console:main',
+			'matillioncli = client.console:main',
         ],
     },
     classifiers=[
