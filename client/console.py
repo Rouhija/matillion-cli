@@ -2,10 +2,12 @@ import sys
 import json
 import time
 import logging
+import urllib3
 from time import sleep
 from client.api import *
 from client.utils import *
 from client.config import Config
+from requests import ConnectTimeout
 from client.signals import listen_signals
 
 LOG = logging.getLogger(__name__)
@@ -35,6 +37,8 @@ class Console:
         try:
             self.select_group()
             self.select_project()
+        except ConnectTimeout:
+            sys.exit('Connection timed out, check target instance firewall rules for port 443')
         except Exception as e:
             sys.exit(f'Something went wrong, {e}')
 
@@ -112,7 +116,7 @@ class Console:
                 elapsed = time.time() - start_time
                 print('\r', end='', flush=True)
                 print(f'{job} is running... elapsed {round(elapsed, 1)} seconds', end='', flush=True)
-                sleep(3)
+                sleep(1)
         print(f'\n{job} finished. State: {state}')
         self.task_id = None
 
@@ -173,6 +177,7 @@ class Console:
 
 
 def main():
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     listen_signals()
     args = arg_parser()
     conf = Config()

@@ -7,6 +7,11 @@ Installation
 pip install matillioncli
 ```
 
+Run from commandline
+```sh
+matillioncli -r <group>.<project>.<job>
+```
+
 Run in interactive mode
 ```sh
 matillioncli
@@ -33,3 +38,6 @@ optional arguments:
 | **list** *search_pattern* | List jobs in current context |
 | **env** | Switch group/project context |
 | **exit** | Exit |
+
+### References
+- [APImap](https://snowflake-support.matillion.com/s/article/2920263)

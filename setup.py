@@ -7,13 +7,12 @@ py_version = sys.version_info[:2]
 if not (3, 5) < py_version < (3, 9):
     raise RuntimeError('snowflake-cli needs Python version 3.6 - 3.8 to run')
 
-
 with open("README.md", "r") as f:
     long_description = f.read()
 
 dist = setup(
     name='matillioncli',
-    version='1.0.0',
+    version='1.0.2',
 	url='https://github.com/Rouhija/matillion-cli',
 	description="A cli tool for running Matillion jobs",
     long_description=long_description,
