@@ -25,7 +25,7 @@ class Config:
                 if config_exists is False:
                     print('First time configuration, please provide following values')
 
-                print('instance address (eg. http://12.12.123.123): ' , end='', flush=True)
+                print('instance address (eg. 12.12.123.123): ' , end='', flush=True)
                 val = sys.stdin.readline().replace('\n', '')
                 self.config_parser.set('matillion', 'instance_addr', val)
 
