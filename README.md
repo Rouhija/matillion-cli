@@ -2,9 +2,13 @@
 CLI tool for running Matillion jobs. Names are case-sensitive. Prompts for instance address, api user and api key on the first run.
 
 ### Usage
+
+Make sure you have python3 on your machine (3.6 < 3.9)
+
 Installation
 ```
-pip install matillioncli
+pip install matillioncli            # install
+pip install matillioncli --upgrade  # update
 ```
 
 Run from commandline
@@ -17,12 +21,15 @@ Run in interactive mode
 matillioncli
 ```
 
+First you will select your environment (dev/test/prod, for example). You can search jobs using `list <search pattern>` and run your recent search using `run list`, or you can run a specific job using `run <job name>`. Running jobs and their states can be displayed with `status` command.
+
 Optional arguments
 ```sh
-usage: matillioncli [-h] [-d] [-c] [-r RUN]
+usage: matillioncli [-h] [-v] [-d] [-c] [-r RUN]
 
 optional arguments:
   -h, --help           show this help message and exit
+  -v, --version        display package version
   -d, --debug          log to console
   -c, --configuration  re-input configuration values
   -r RUN, --run RUN    start orchestration job without interactive mode
@@ -35,6 +42,7 @@ optional arguments:
 | **help** | Display help |
 | **status** | Display status or queued jobs |
 | **run** *job_name* | Run job in current context |
+| **run list** | Run recently listed jobs |
 | **list** *search_pattern* | List jobs in current context |
 | **env** | Switch group/project context |
 | **exit** | Exit |

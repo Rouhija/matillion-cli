@@ -34,15 +34,20 @@ def format_resp(raw_resp):
         return None
 
 def enumerate_list(ls, search=None):
+    r = []
     for i, obj in enumerate(ls):
         if search is not None:
-            if search in obj:
+            if search.lower() in obj.lower():
                 print(f'{i} - {obj}')
+                r.append(obj)
         else:
             print(f'{i} - {obj}')
+            r.append(obj)
+    return r
 
 def arg_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--version", help="display package version", action="store_true")
     parser.add_argument("-d", "--debug", help="log to console", action="store_true")
     parser.add_argument("-c", "--configuration", help="re-input configuration values", action="store_true")
     parser.add_argument("-r", "--run" , help="start orchestration job without interactive mode (<group>.<project>.<job>)")
@@ -57,7 +62,7 @@ def logger_options(debug: int):
         )
     else:
         logging.basicConfig(
-            level=logging.ERROR,
+            level=logging.WARNING,
             format='%(levelname)s:%(asctime)s ⁠— %(message)s',
             datefmt='%d/%m/%Y %H:%M:%S'
         )

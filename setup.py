@@ -12,7 +12,7 @@ with open("README.md", "r") as f:
 
 dist = setup(
     name='matillioncli',
-    version='1.0.2',
+    version='1.0.4',
 	url='https://github.com/Rouhija/matillion-cli',
 	description="A cli tool for running Matillion jobs",
     long_description=long_description,

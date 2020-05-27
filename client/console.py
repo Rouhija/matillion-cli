@@ -3,6 +3,7 @@ import json
 import time
 import logging
 import urllib3
+import pkg_resources
 from time import sleep
 from client.api import *
 from client.utils import *
@@ -10,6 +11,8 @@ from client.config import Config
 from requests import ConnectTimeout
 from client.signals import listen_signals
 
+
+VERSION = pkg_resources.require('matillioncli')[0].version
 LOG = logging.getLogger(__name__)
 
 
@@ -21,16 +24,18 @@ class Console:
         self.group = None
         self.project = None
         self.active_tasks = []
+        self.recent_search = None
         self.keepalive = True
 
     def print_usage(self):
         print('\nusage:')
         print('\tlist <search pattern> (list jobs in current context)')
         print('\trun <job_name> (run job in current context)')
-        print('\tenv (switch context)')
+        print('\trun list (run job recently listed jobs)')
+        print('\tenv (switch environment)')
         print('\tstatus (display status or active programs)')
         print('\thelp (display this message)')
-        print('\texit')
+        print('\texit | ctrl+C')
         print()
 
     def select_env(self):
@@ -38,22 +43,22 @@ class Console:
             self.select_group()
             self.select_project()
         except ConnectTimeout:
-            sys.exit('Connection timed out, check target instance firewall rules for port 443')
+            sys.exit('Connection timed out, check target Matillion instance firewall HTTPS rules for port 443')
         except Exception as e:
             sys.exit(f'Something went wrong, {e}')
 
     def run(self):
         self.select_env()
         self.print_usage()
-        try:
-            while self.keepalive:
+        while self.keepalive:
+            try:
                 print(f'{self.group}:{self.project}> ', end='', flush=True)
                 user_in = sys.stdin.readline().replace('\n', '').strip()
                 cmd = parse_command(user_in)
                 if cmd[0] == 'list':
                     self.list_jobs(cmd)
                 elif cmd[0] == 'run':
-                    self.run_job(cmd[1])
+                    self.run_jobs(cmd[1])
                 elif cmd[0] == 'env':
                     self.select_env()
                 elif cmd[0] == 'status':
@@ -62,10 +67,8 @@ class Console:
                     self.print_usage()
                 elif cmd[0] == 'exit':
                     self.keepalive = False
-        except Exception as e:
-            LOG.error(e)
-        finally:
-            sys.exit('exit')
+            except Exception as e:
+                LOG.warning(e)
 
     def get_status(self):
         for task_id in self.active_tasks:
@@ -81,9 +84,18 @@ class Console:
             else:
                 job_uptime = int(resp['endTime']) - int(resp['startTime'])
             job_uptime = round(job_uptime / 1000, 1)
-            print('{:{width}}'.format(job_name, width=30), end='', flush=True)
+            print('{:{width}}'.format(job_name, width=50), end='', flush=True)
             print('{:{width}}'.format(job_state, width=10), end='', flush=True)
             print(f'uptime: {job_uptime} seconds')
+
+    def run_jobs(self, job):
+        if job == 'list':
+            print(f'Executing {self.recent_search}')
+            for j in self.recent_search:
+                self.run_job(j)
+        else:
+            self.run_job(job)
+        print('\ntype `status` to see job state\n')
 
     def run_job(self, job, poll=False):
         if not self.is_running(job):
@@ -145,9 +157,13 @@ class Console:
         jobs = format_resp(raw_resp)
         jobs = sorted(jobs)
         if len(cmd) == 2:
-            enumerate_list(jobs, cmd[1])
+            self.recent_search = enumerate_list(jobs, cmd[1])
         else:
-            enumerate_list(jobs)
+            self.recent_search = enumerate_list(jobs)
+        if len(self.recent_search):
+            print('\ntype `run list` to execute these jobs\n')
+        else:
+            print('no matches')
 
     def select_group(self):
         raw_resp = get_groups(self.addr, self.auth)
@@ -184,7 +200,9 @@ def main():
     conf.write_config(args.configuration)
     logger_options(args.debug)
     c = Console(conf.read_config())
-    if args.run:
+    if args.version:
+        print(VERSION)
+    elif args.run:
         c.run_from_argument(args.run)
     else:
         c.run()
